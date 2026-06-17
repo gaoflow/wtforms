@@ -1,3 +1,4 @@
+import decimal
 import ipaddress
 import math
 import re
@@ -212,13 +213,23 @@ class NumberRange:
     def _resolve(value):
         return value() if callable(value) else value
 
+    @staticmethod
+    def _is_nan(value):
+        # ``math.isnan`` raises ``ValueError`` on a signaling-NaN ``Decimal``
+        # (which a ``DecimalField`` produces from the submitted string "snan").
+        # ``Decimal.is_nan`` covers both quiet and signaling NaNs without
+        # raising; other numeric types stay on the ``math.isnan`` path.
+        if isinstance(value, decimal.Decimal):
+            return value.is_nan()
+        return math.isnan(value)
+
     def __call__(self, form, field):
         min_value = self._resolve(self.min)
         max_value = self._resolve(self.max)
         data = field.data
         if (
             data is not None
-            and not math.isnan(data)
+            and not self._is_nan(data)
             and (min_value is None or data >= min_value)
             and (max_value is None or data <= max_value)
         ):

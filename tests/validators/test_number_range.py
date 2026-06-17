@@ -47,6 +47,20 @@ def test_number_range_nan(nan, dummy_form, dummy_field):
         validator(dummy_form, dummy_field)
 
 
+def test_number_range_signaling_nan(dummy_form, dummy_field):
+    """A signaling-NaN Decimal is rejected like a quiet NaN, not crashed on.
+
+    ``DecimalField`` coerces the submitted string ``"snan"`` into
+    ``Decimal("sNaN")``, so the validator must treat it as out of range
+    (raising :class:`ValidationError`) rather than letting ``math.isnan``
+    propagate a ``ValueError``.
+    """
+    validator = NumberRange(0, 10)
+    dummy_field.data = decimal.Decimal("sNaN")
+    with pytest.raises(ValidationError):
+        validator(dummy_form, dummy_field)
+
+
 @pytest.mark.parametrize(
     "min_v, max_v, test_v",
     [(lambda: 5, lambda: 10, 7), (lambda: 5, None, 7), (None, lambda: 100, 70)],
