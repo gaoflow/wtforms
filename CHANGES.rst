@@ -1,5 +1,15 @@
 .. currentmodule:: wtforms
 
+Version 3.3.0b4
+---------------
+
+Unreleased
+
+- :class:`~validators.NumberRange` no longer crashes on a signaling-NaN
+  ``Decimal`` value (which a :class:`~fields.DecimalField` produces from a
+  submitted ``"snan"`` string); it is rejected like any other NaN. :pr:`930`
+
+
 Version 3.3.0b3
 ---------------
 
